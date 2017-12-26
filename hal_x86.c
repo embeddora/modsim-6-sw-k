@@ -28,7 +28,7 @@
  * Abstract:  
  */
 
-/* printf() */
+/* printk() */
 #include <stdio.h>
 
 /* struct timeval, gettimeofday() */
@@ -65,7 +65,7 @@ int fltJiffy = 1;
 	/* Operate uSeconds multiplied by 10e6 because <usleep> accepts	integer parameters only */
 	pTimepoint->fltAbsTime = pTimepoint->fltAbsTime*1000000;
 
-	printf("[%s] : <BEFORE TIME SHIFTING> real tm.: %f\n", __FILE__, pTimepoint->fltAbsTime	);
+	printk("[%s] : <BEFORE TIME SHIFTING> real tm.: %f\n", __FILE__, pTimepoint->fltAbsTime	);
 
 	/* Don't proceed with this fuction once given an unappicable input data */
 	if (0.0 == pTimepoint->fltAbsTime ) return;
@@ -94,12 +94,12 @@ int fltJiffy = 1;
 		/* Wait for relative time <fltRelTime> to catch up with real time <pTimepoint->fltAbsTime>  */
 		usleep (fltJiffy);
 
-		printf("[%s] : <TIME SHIFTING> real tm.: %f, shiftable tm.: %f \n", __FILE__, pTimepoint->fltAbsTime,	fltRelTime ); 
+		printk("[%s] : <TIME SHIFTING> real tm.: %f, shiftable tm.: %f \n", __FILE__, pTimepoint->fltAbsTime,	fltRelTime ); 
 
 	} while (_right < _left);
 	
 	/* Now they're equal or least 'relative tm' is not less than 'real tm' */
-	printf("[%s] : <AFTER TIME SHIFTING> will pretend like <%f>, is same as <%f> \n", __FILE__,
+	printk("[%s] : <AFTER TIME SHIFTING> will pretend like <%f>, is same as <%f> \n", __FILE__,
 
 		pTimepoint->fltAbsTime,	fltRelTime );
 

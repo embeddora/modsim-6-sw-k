@@ -28,49 +28,50 @@
 # Abstract: 
 #
 
-ifeq ($(strip $(platform)),)
-$(error "Define 'platform', as one of those: 'platform=PC', 'platform=SITARA' ")
+
+
+# Target module name
+TARGET := modsim
+
+ifndef KERNELPATH
+# Kernel directory (effective for the host only; we can't detect target's kernel, which may differ from host's one)
+KERNELPATH := /lib/modules/$(shell uname -r)/build
 endif
 
-ifeq ($(strip $(platform)),PC)
-	PREFIX=
-	CFLAGS=-O3  -DDEBUG_DATA 
-	OBJS= modsim.o datastruct.o hal_x86.o
-	GRBG=*.o *~ m
+# Include directories
+INCLUDES := -I$(CURDIR) \
+    -I$(KERNELPATH)/include/linux \
+    -I$(KERNELPATH)/include/asm 
 
-	EXTRA=
-else
-	ifeq ($(strip $(platform)),SITARA)
-		# Prefix for Cortex-8 ARM crosscompiler 
-		PREFIX= #arm-none-linux-gnueabi-
-		CFLAGS=-O3 -DSITARA  #-DSH_FOPS
+export EXTRA_CFLAGS += $(INCLUDES)
 
-		OBJS= modsim.o datastruct.o beagle.o hal_arm8.o
-		GRBG=*.o *~ m
-	endif
-endif
+# Module extra compilation flags
+EXTRA_CFLAGS +=  -Wall                 -O3   -DDEBUG_DATA 
 
-# (cross-)compiler
-CC=$(PREFIX)gcc
-LD=$(PREFIX)ld
 
-# Excessive debug info not needed when program is ready. Spoils 'realtime' operating mode. Keep commented-out.
-# CFLAGS+=-DDEBUG_DATA
+# Kernel module compilation - part 2
+ifneq ($(KERNELRELEASE),)
 
-# Basic diagnistocs of ADxx Converter. Endless loop
-# CFLAGS+= -DHW_AD53_TEST
+obj-m += $(TARGET).o  datastruct.o beagle.o hal_arm8.o
+	
+else 
 
-.o: .s
-	$(CC) $(ASMFLAGS) -o $@ -c $< 
+# Makefile targets - part 1
 
-.o: .c
-	$(CC) $(CFLAGS) -o $@ -c $<  -lm 
+all: build install
 
-all:	m
+build:
+	@$(MAKE) -C $(KERNELPATH) M=`pwd` modules MDIR=$(CURDIR)
 
-m: $(OBJS)
-	$(CC) $(CFLAGS)  -o m $(OBJS)  -lm 
-	$(EXTRA)
+install:
+	@install -m 644 $(TARGET).ko $(MODULEPATH)
+
+uninstall:
+	@find $(MODULEPATH) -name $(TARGET).ko | xargs rm -rf
 
 clean:
-	rm $(GRBG)
+	@$(MAKE) -C $(KERNELPATH) M=`pwd` clean
+	@rm -f Module.symvers
+
+endif
+

@@ -93,7 +93,7 @@ static void OpenGPIO(char * pcPortStr)
 		usleep(1000);
 	}
 	else
-		printf("[%s] [%s] empty Port ID \n",__FILE__, __func__ );
+		printk("[%s] [%s] empty Port ID \n",__FILE__, __func__ );
 }
 
 /* Toggle GPIO port <pcPortStr> ON */
@@ -124,7 +124,7 @@ void OnGPIO(FILE * fcPortFile)
 //.		usleep(1);
 	}
 	else
-		printf("[%s] [%s] empty Port ID \n",__FILE__, __func__ );
+		printk("[%s] [%s] empty Port ID \n",__FILE__, __func__ );
 }
 
 /* Toggle GPIO port <pcPortStr> OFF */
@@ -155,7 +155,7 @@ void OffGPIO(FILE * fcPortFile)
 //.		usleep(2);
 	}
 	else
-		printf("[%s] [%s] empty Port ID \n",__FILE__, __func__ );
+		printk("[%s] [%s] empty Port ID \n",__FILE__, __func__ );
 }
 
 void _i_AD5300_Write_W(unsigned char data, int iIdx) 
@@ -214,18 +214,18 @@ int iIdx, iPdx;
 	/* Initialize GPIO ports */
 	for (iIdx = 0; iIdx < sizeof(GPIOs)/sizeof(GPIOs[0]);iIdx++ )
 	{
-//.		printf("[%s] [%s] opening GPIO %s \n",__FILE__, __func__ , GPIOs[iIdx] );
+//.		printk("[%s] [%s] opening GPIO %s \n",__FILE__, __func__ , GPIOs[iIdx] );
 
 		OpenGPIO( GPIOs[iIdx] );	
 	}
-	printf("[%s] [%s] opened all GPIO ports \n",__FILE__, __func__ );
+	printk("[%s] [%s] opened all GPIO ports \n",__FILE__, __func__ );
 
 #if !defined(SH_FOPS)
 
 	/* Open GPIO value files and store file poniters in array <GPIO_VALUE_FILES> */
 	for (iIdx = 0; iIdx < sizeof(GPIO_VALUE_FILES)/sizeof(GPIO_VALUE_FILES[0]);iIdx++ )
 	{
-//.		printf("[%s] [%s] opening GPIO value file for GPIO %s \n",__FILE__, __func__ , GPIOs[iIdx] );
+//.		printk("[%s] [%s] opening GPIO value file for GPIO %s \n",__FILE__, __func__ , GPIOs[iIdx] );
 
 		/* Filename prepare */
 		sprintf (pcCmdBuffer, "/sys/class/gpio/gpio%s/value", GPIOs[iIdx]);
@@ -233,7 +233,7 @@ int iIdx, iPdx;
 		/* Try to open value file <pcCmdBuffer> */
 		if ( NULL == (GPIO_VALUE_FILES[iIdx] = fopen (pcCmdBuffer, "wb+") ) )
 		{
-			printf("[%s] [%s] can't open GPIO value file <%s> \n", __FILE__, __func__ , pcCmdBuffer);
+			printk("[%s] [%s] can't open GPIO value file <%s> \n", __FILE__, __func__ , pcCmdBuffer);
 
 			continue;
 		}
@@ -279,14 +279,14 @@ int iIdx;
 		/* Cyclically toggle GPIO ports ON */
 		for (iIdx = 0; iIdx < sizeof(GPIOs)/sizeof(GPIOs[0]);iIdx++ )
 		{
-//.			printf("[%s] [%s] toggling GPIO %s ON\n",__FILE__, __func__ , GPIOs[iIdx] );
+//.			printk("[%s] [%s] toggling GPIO %s ON\n",__FILE__, __func__ , GPIOs[iIdx] );
 			OnGPIO( GPIOs[iIdx] );
 		}
 
 		/* Cyclically toggle GPIO ports OFF */
 		for (iIdx = 0; iIdx < sizeof(GPIOs)/sizeof(GPIOs[0]);iIdx++ )
 		{
-//.			printf("[%s] [%s] toggling GPIO %s OFF\n",__FILE__, __func__ , GPIOs[iIdx] );
+//.			printk("[%s] [%s] toggling GPIO %s OFF\n",__FILE__, __func__ , GPIOs[iIdx] );
 			OffGPIO( GPIOs[iIdx] );
 		}
 #else		
@@ -330,12 +330,10 @@ int iIdx;
 	/* Open GPIO value files and store file poniters in array <GPIO_VALUE_FILES> */
 	for (iIdx = 0; iIdx < sizeof(GPIO_VALUE_FILES)/sizeof(GPIO_VALUE_FILES[0]);iIdx++ )
 	{
-//.		printf("[%s] [%s] closing GPIO value file for GPIO %s \n",__FILE__, __func__ , GPIOs[iIdx] );
-
 		/* Try to close value file <pcCmdBuffer> */
 		if ( 0 != fclose ( GPIO_VALUE_FILES[iIdx] ) )
 		{
-			printf("[%s] [%s] can't close GPIO value file  <%s>. Nevertheless proceeding with next one\n", __FILE__, __func__ , pcCmdBuffer);
+			printk("[%s] [%s] can't close GPIO value file  <%s>. Nevertheless proceeding with next one\n", __FILE__, __func__ , pcCmdBuffer);
 		}
 
 	}/* for (iIdx = 0; ... */

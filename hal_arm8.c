@@ -28,14 +28,7 @@
  * Abstract:  
  */
 
-/* printf(), stdout */
-#include <stdio.h>
 
-/* realloc() */
-#include <stdlib.h>
-
-/* struct timeval, gettimeofday() */
-#include <sys/time.h>
 
 /* Basic project definitions  */
 #include "modsim.h"

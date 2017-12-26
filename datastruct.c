@@ -28,20 +28,20 @@
  * Abstract:  
  */
 
-/* stdout */
-#include <stdio.h>
 
-/* strlen() */
-#include <string.h>
 
-/* calloc() */
-#include <stdlib.h>
-
-/* struct timeval, gettimeofday() */
-#include <sys/time.h>
-
+#if 0
+In kernel - never
 /* sqrt() */
 #include <math.h>
+#else
+#endif /* (0) */
+
+/* Macro NULL */
+#include <linux/module.h>
+
+/* Definition kmalloc() */
+#include <linux/slab.h>
 
 /* Data structure type definition */
 #include "datastruct.h"
@@ -49,8 +49,11 @@
 /* Errcode definitions */
 #include "modsim.h"
 
+#if 0
+Don't need redefinition
 #define max(x,y)	((x>y)?x:y)
 #define min(x,y)	((x<y)?x:y)
+#endif /* (0) */
 
 /* Multiplier to get decimal data for ADxx converter from volatge value */
 #define CONV_MAX_SCALE 255
@@ -74,13 +77,13 @@ pTimepointType pChild, pTempPointChain;
 	if (NULL == *ppThisPointChain)
 	{
 		/* only one chain, for beginning */
-		*ppThisPointChain = (pTimepointType) calloc ( 1, sizeof (TimepointType) );
+		*ppThisPointChain = (pTimepointType) kmalloc (sizeof (TimepointType), GFP_KERNEL);
 
 		/* check if successful */
 		if (NULL == *ppThisPointChain)
 		{
 
-			printf("[%s] %s:%s : ERROR: can't allocate memory for first element. %f: [X(%f),Y(%f)]  \n",
+			printk("[%s] %s:%s : ERROR: can't allocate memory for first element. %f: [X(%f),Y(%f)]  \n",
 			__FILE__, caller, __func__,
 			*pfltTm, *pfltX, *pfltY);
 
@@ -115,7 +118,7 @@ pTimepointType pChild, pTempPointChain;
 		(*ppThisPointChain)->ushRawYval = min(CONV_MAX_SCALE, (*ppThisPointChain)->ushRawYval);
 #endif /* (0) */
 
-		(*ppThisPointChain)->pcMarquee = calloc (1, strlen (pcMrq) +1 );
+		(*ppThisPointChain)->pcMarquee = kmalloc (strlen (pcMrq) +1, GFP_KERNEL);
 		strcpy( (*ppThisPointChain)->pcMarquee, pcMrq);
 
 		// TODO: rework
@@ -124,7 +127,7 @@ pTimepointType pChild, pTempPointChain;
 
 #if defined(DEBUG_DATA)
 
-		printf("[%s] %s:%s : FIRST <%f> <%f>[%d] <%f>[%d] <%s> \n", __FILE__, caller, __func__,
+		printk("[%s] %s:%s : FIRST <%f> <%f>[%d] <%f>[%d] <%s> \n", __FILE__, caller, __func__,
 			(*ppThisPointChain)->fltAbsTime,
 			(*ppThisPointChain)->fltXval, (*ppThisPointChain)->ushRawXval,
 			(*ppThisPointChain)->fltYval, (*ppThisPointChain)->ushRawYval,
@@ -140,12 +143,12 @@ pTimepointType pChild, pTempPointChain;
 		/* point with first temporary element to head of chain */
 		pChild = *ppThisPointChain;
 
-		pTempPointChain = (pTimepointType) calloc (1, sizeof (TimepointType) );
+		pTempPointChain = (pTimepointType) kmalloc (sizeof (TimepointType), GFP_KERNEL);
 
 		if (NULL == pTempPointChain)
 		{
 
-			printf("[%s] %s:%s : ERROR: can't allocate memory for next element. %f: [X(%f),Y(%f)]  \n", 
+			printk("[%s] %s:%s : ERROR: can't allocate memory for next element. %f: [X(%f),Y(%f)]  \n", 
 			__FILE__, caller, __func__,
 			*pfltTm, *pfltX, *pfltY);
 
@@ -185,12 +188,12 @@ pTimepointType pChild, pTempPointChain;
 #endif /* (0) */
 
 
-		pTempPointChain->pcMarquee = calloc (1, strlen (pcMrq) +1 );
+		pTempPointChain->pcMarquee = kmalloc (strlen (pcMrq) +1, GFP_KERNEL);
 		strcpy( pTempPointChain->pcMarquee, pcMrq);
 
 
 #if defined(DEBUG_DATA)
-		printf("[%s] %s:%s : NEXT <%f> <%f>[%d] <%f>[%d] <%s> \n", __FILE__, caller, __func__,
+		printk("[%s] %s:%s : NEXT <%f> <%f>[%d] <%f>[%d] <%s> \n", __FILE__, caller, __func__,
 			pTempPointChain->fltAbsTime,
 			pTempPointChain->fltXval, pTempPointChain->ushRawXval,
 			pTempPointChain->fltYval, pTempPointChain->ushRawYval,
@@ -239,8 +242,8 @@ gettimeofday(&starttime_A, 0);
 	/* Process each entry of chain */
 	while (NULL != pPointChain)
 	{
-#if DEBUG_DATA_
-		printf("[%s] %s:%s : <%f> <%f> <%f> <%s> \n", __FILE__, caller, __func__,
+#if 0
+		printk("[%s] %s:%s : <%f> <%f> <%f> <%s> \n", __FILE__, caller, __func__,
 			pPointChain->fltAbsTime,
 			pPointChain->fltXval,
 			pPointChain->fltYval,
@@ -299,7 +302,7 @@ gettimeofday(&starttime_A, 0);
 gettimeofday(&endtime_A, 0);
 float elapsedtime_A = 1000000*(endtime_A.tv_sec - starttime_A.tv_sec - fFIRST) 
 			+ endtime_A.tv_usec - starttime_A.tv_usec;
-printf(">>> time elapsed : %f <<<\n", elapsedtime_A);
+printk(">>> time elapsed : %f <<<\n", elapsedtime_A);
 
 
 
@@ -319,13 +322,13 @@ pTimepointType pChild, pThisPointChain = *ppThisPointChain;
 		if (pThisPointChain->pcMarquee)
 		
 		    /* then release this space */
-		    free(pThisPointChain->pcMarquee);
+		    kfree(pThisPointChain->pcMarquee);
 
 		/* preserve a pointer to next record */		    
 		pChild = pThisPointChain->pNext;
 		
 		/* free space occupied by current record */
-		free (pThisPointChain);
+		kfree (pThisPointChain);
 		
 		/* Go to next record */
 		pThisPointChain = pChild;
